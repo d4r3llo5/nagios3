@@ -170,7 +170,8 @@ SQL
       uri = URI.parse(url)
       headers = {
         'Content-Type' => 'application/json',
-        'Content-Length' => body.size.to_s
+        'Content-Length' => body.size.to_s,
+        'probe_identification' => get_probe_identifier
       }
       request = Net::HTTP::Post.new(uri.path, headers)
       http = Net::HTTP.new(uri.host, uri.port)
@@ -198,6 +199,11 @@ SQL
     def run_sql(sql)
       sql.gsub!("\n", " ")
       `PGPASSWORD=mb723wk8 /usr/bin/psql -h localhost probe_production ccisystems -c "#{sql}"`
+    end
+
+    def get_probe_identifier  # Add this to the noc send command
+      sql_return = `PGPASSWORD=mb723wk8 /usr/bin/psql -h localhost probe_production probe -c "select * from probe_identification_settings;"`
+      sql_return.split("\n")[2].split(" | ")[1].strip
     end
 
   end
